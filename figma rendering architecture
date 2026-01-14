@@ -1,0 +1,105 @@
+https://madebyevan.com/figma/
+
+Skip to main contentSkip to search
+KAELAN.FYI
+/notes
+/research
+/topics
+/refs
+/listening
+/about
+
+⌘K
+
+☀
+← /research
+Figma's Rendering Architecture
+Processing
+·
+Reading Notes
+Created Jan 4, 2025
+Source
+Building a professional design tool on the web — Evan Wallace (Figma CTO) (Article)
+View source →
+Project: web-graphics-research
+graphics
+webgl
+webgpu
+wasm
+architecture
+Deep dive into how Figma achieves native-app performance in a browser. Essential reading for anyone building graphics-heavy web apps.
+
+The Stack
+UI Layer (TypeScript + React)
+         ↓
+Document Model (C++ → WASM via Emscripten)
+         ↓
+Rendering Engine (C++ → WebGL/WebGPU)
+Key insight: The canvas and document model are C++, compiled to WASM. Only the UI chrome is JavaScript. This split lets them heavily optimize the performance-critical path while using modern UI frameworks for the toolbar/panels.
+
+Why WebGL (and now WebGPU)
+Figma bypasses the browser’s HTML rendering pipeline entirely. Options were:
+
+Approach	Problem
+HTML/SVG	DOM overhead, can’t handle 10k+ objects
+2D Canvas	Single-threaded, limited compositing
+WebGL	Direct GPU access, full control
+WebGL wasn’t designed for 2D, but it turns out you can build a highly optimized 2D renderer on top of it. Most native apps (including Sketch at the time) barely used the GPU — Figma exploited this gap.
+
+Tile-Based Rendering
+The renderer is tile-based: the canvas is divided into tiles, and only visible/dirty tiles are re-rendered. This enables:
+
+Infinite canvas without memory explosion
+Efficient partial updates
+GPU-friendly batching
+WebGPU Migration (2023-2024)
+Figma is transitioning to WebGPU, which enables:
+
+Compute shaders: Move blur/filter work from CPU to GPU
+MSAA: Multi-sample anti-aliasing without hacks
+RenderBundles: Reduce CPU overhead of draw calls
+Better parallelism: GPU can stay fed while CPU prepares next frame
+Challenge: Had to support both GLSL (WebGL) and WGSL (WebGPU) shaders during transition.
+
+WASM for Performance
+C++ compiled to WASM via Emscripten. Benefits:
+
+Near-native performance for document operations
+Memory layout control (critical for large documents)
+Same C++ codebase runs server-side for rendering previews
+The WASM cut load times by 3x compared to their previous asm.js approach.
+
+Real-Time Collaboration
+Figma uses a CRDT-inspired approach but with a central server:
+
+Server is source of truth (simplifies conflict resolution)
+Operations are atomic and ordered
+Cursor positions broadcast separately from document changes
+This is simpler than pure P2P CRDTs while still enabling multiplayer.
+
+Key Takeaways
+Don’t fight the browser: Bypass slow paths (DOM) entirely
+C++ + WASM: For performance-critical code, JavaScript isn’t enough
+Tile-based rendering: Essential for infinite canvas
+GPU everything: Even 2D benefits massively from GPU acceleration
+WebGPU is the future: Compute shaders unlock new optimizations
+Sources:
+
+Made by Evan: Figma
+Figma Blog: WebGPU
+Figma Blog: WASM
+←
+Linked from
+No backlinks yet
+
+Connects to
+→
+No outbound links
+
+github
+twitter
+⬡ graph
+·
+↻ random
+·
+rss
