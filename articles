@@ -1,0 +1,3 @@
+
+worker, transfer offscreen을 통한 main thread blocking 방지
+https://github.com/mdn/dom-examples/tree/main/web-workers/offscreen-canvas-worker
