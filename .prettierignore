@@ -1,0 +1,5 @@
+# .prettierignore
+*.md
+articles/**/*.md
+docs/**/*.md
+prompts/**/*.md
